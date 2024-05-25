@@ -208,10 +208,16 @@ class PublisherController extends Controller
         $domain = DomainVerifcation::whereTracker($tracker)->first();
 
         $fileURL = 'http://' . $domain->name . '/' . strtolower(str_replace(' ', '_', $general->site_name)) . '.txt';
+        $fileURL_2 = 'http://' . $domain->name . '/files/sw.js';
 
         $headers = @get_headers($fileURL);
+        $headers_2 = @get_headers($fileURL_2);
         if (empty($headers) || strpos($headers[0], '404') !== false) {
-            $notify[] = ['error', 'The verification file is not accessible. Please make sure it\'s uploaded'];
+            $notify[] = ['error', 'The verification adstack file is not accessible. Please make sure it\'s uploaded'];
+            return back()->withNotify($notify);
+        }
+        if (empty($headers_2) || strpos($headers_2[0], '404') !== false) {
+            $notify[] = ['error', 'The verification SW file is not accessible. Please make sure it\'s uploaded'];
             return back()->withNotify($notify);
         }
 

@@ -34,7 +34,9 @@ class VisitorController extends Controller
 
     public function getIp()
     {
-        if (Request::server('HTTP_CLIENT_IP')) {
+        if (Request::ip()) {
+            return Request::ip();
+        } elseif (Request::server('HTTP_CLIENT_IP')) {
             return Request::server('HTTP_CLIENT_IP');
         } elseif (Request::server('HTTP_X_FORWARDED_FOR')) {
             return Request::server('HTTP_X_FORWARDED_FOR');
@@ -58,7 +60,7 @@ class VisitorController extends Controller
 
         $domain = DomainVerifcation::where('name', $currentUrl)
             ->where('publisher_id', $publisherId)
-            ->where('status',1)->first();
+            ->where('status', 1)->first();
 
         if (!$domain) {
             info("Domain not found or unverified");
@@ -78,7 +80,7 @@ class VisitorController extends Controller
 
         if ($adType) {
 
-            $queryAd = CreateAd::where('ad_type_id',$adType->id)->where('status',1);
+            $queryAd = CreateAd::where('ad_type_id', $adType->id)->where('status', 1);
 
 
             if ($setting->check_country && $query->country_name) {
@@ -98,7 +100,7 @@ class VisitorController extends Controller
 
             $ads = $queryAd->inRandomOrder()->first();
 
-            if(empty($ads)){
+            if (empty($ads)) {
                 return $this->defaultAd($slug, $adType->width, $adType->height, $setting->sitename);
             }
 
@@ -133,9 +135,8 @@ class VisitorController extends Controller
 
                         $ipcart = IpLog::with('ip')->where('created_at', '>=', Carbon::now()->subHours(24))->get();
                         $uniqueIps = $ipcart->pluck('ip.ip')->count();
-                        if ($uniqueIps>3) {
-
-                        }else{
+                        if ($uniqueIps > $setting->same_ip_limit) {
+                        } else {
                             if (@$advertiser->impression > 0) {
                                 $advertiser->impression -= 1;
                                 $advertiser->update();
@@ -143,11 +144,11 @@ class VisitorController extends Controller
                                 $ads->status = 0;
                                 $ads->update();
                                 Purchase::where('advertiser_id', $ads->advertiser_id)
-                                    ->where('type','impression')->delete();
+                                    ->where('type', 'impression')->delete();
                             }
 
                             if ($publisher) {
-                                $publisher->balance += $setting->cpm;
+                                $publisher->balance += $setting->cpm_pub;
                                 $publisher->update();
 
                                 $earningLog = EarningLog::firstOrNew([
@@ -155,12 +156,11 @@ class VisitorController extends Controller
                                     'ad_id' => $ads->id,
                                 ]);
 
-                                $earningLog->amount += $setting->cpm;;
+                                $earningLog->amount += $setting->cpm_pub;;
                                 $earningLog->ad_type = $ads->ad_type;
                                 $earningLog->save();
                             }
                         }
-
                     }
                 }
 
@@ -195,6 +195,91 @@ class VisitorController extends Controller
         return $this->randomAd($redirectUrl, $adImage, $adType->width, $adType->height, $setting->site_name);
     }
 
+    public function getThirdPartyAdvertise($pubId, $adTypeId, $currentUrl)
+    {
+        header("Access-Control-Allow-Origin: *");
+        $publisherId = Crypt::decryptString($pubId);
+        $adType = AdType::with('tpCost')->where('id', $adTypeId)->where('status', 1)->first();
+        $setting = gs();
+        $existingIp = IpChart::firstOrNew(['ip' => $this->getIp()]);
+        if ($existingIp->blocked == 1) {
+            return;
+        }
+        $existingIp->save();
+        $domain = DomainVerifcation::where('name', $currentUrl)
+        ->where('publisher_id', $publisherId)
+        ->where('status', 1)->first();
+
+        if (!$domain) {
+            info("Domain not found or unverified");
+            return;
+        }
+        // dd($domain);
+
+
+        // $query = getIpInfo();
+        $query = json_decode(file_get_contents('http://api.ipstack.com/' . $this->getIp() . '?access_key=' . $setting->location_api));
+
+        // if (@$query->error) {
+        //     info("IP tracking  error", [
+        //         'error' => @$query->error
+        //     ]);
+        //     return;
+        // }
+
+        if ($adType) {
+            $existIpLog = $existingIp->iplogs
+                ->where('ad_type_id', $adTypeId)
+                ->where('is_impression', 1)
+                ->where('time', '>=', Carbon::now()->subMinutes(1))
+                ->first();
+
+            $publisher = Publisher::findOrFail($publisherId);
+            $publisherAd = PublisherAd::firstOrNew([
+                'ad_type_id' => $adTypeId,
+                'publisher_id' => $publisher->id,
+                'date' => Carbon::now()->toDateString()
+            ]);
+            $publisherAd->imp_count += 1;
+            $publisherAd->save();
+            if (!$existIpLog && $adType->is_impression == 1) {
+                $ipLog = new IpLog();
+                $ipLog->ip_id = $existingIp->id;
+                $ipLog->country = "Unknown";
+                $ipLog->ad_type_id = $adTypeId;
+                $ipLog->ad_type = $adType->type;
+                $ipLog->is_impression = $adType->is_impression;
+                $ipLog->time = Carbon::now()->toTimeString();
+                $ipLog->save();
+                $ipcart = IpLog::with('ip')->where('ad_type_id' , $adTypeId)->where('is_impression' , 1)->where('created_at', '>=', Carbon::now()->subHours(24))->get();
+                $uniqueIps = $ipcart->pluck('ip.ip')->count();
+                if ($uniqueIps > $setting->same_ip_limit) {
+                } else {
+                    if ($publisher) {
+                    
+                        $publisher->balance += $adType->tpCost->cpm_pub / $setting->cost_unit;
+                        $publisher->update();
+
+                        $earningLog = EarningLog::firstOrNew([
+                            'publisher_id' => $publisher->id,
+                            'ad_type_id' => $adTypeId,
+                        ]);
+
+                        $earningLog->amount += $adType->tpCost->cpm_pub / $setting->cost_unit;
+                        $earningLog->ad_type = $adType->type;
+                        $earningLog->ad_type_id = $adTypeId;
+                        $earningLog->save();
+                    }
+                }
+            }
+        } else {
+            info("Ad type not found. ad type: request ad type slug: ");
+            return;
+        }
+
+        return;
+    }
+
     public function adClicked($publisherId, $trackId)
     {
         $ad = CreateAd::where('track_id', $trackId)->first();
@@ -225,7 +310,7 @@ class VisitorController extends Controller
 
             if ($ad->ad_type == 'click') {
                 // $ifPurchaseAdvertiser = getSubscriptionVisitor($advertiser->id, 'click');
-                    $ifPurchaseAdvertiser = Advertiser::findOrFail($advertiser->id);
+                $ifPurchaseAdvertiser = Advertiser::findOrFail($advertiser->id);
                 if (!$existIpLog) {
                     $ipLog = new IpLog();
                     $ipLog->ip_id = $existingIp->id;
@@ -236,12 +321,11 @@ class VisitorController extends Controller
                     $ipLog->save();
 
 
-                    $ipcart = IpLog::with('ip')->where('created_at', '>=', Carbon::now()->subHours(24))->get();
+                    $ipcart = IpLog::with('ip')->where('is_impression' , 1)->where('created_at', '>=', Carbon::now()->subHours(24))->get();
                     $uniqueIps = $ipcart->pluck('ip.ip')->count();
 
-                    if ($uniqueIps>3) {
-
-                    }else{
+                    if ($uniqueIps > $setting->same_ip_limit) {
+                    } else {
 
                         if (@$ifPurchaseAdvertiser->click > 0) {
                             $ifPurchaseAdvertiser->click -= 1;
@@ -254,7 +338,7 @@ class VisitorController extends Controller
                         }
 
                         if ($publisher) {
-                            $publisher->balance += $setting->cpc;
+                            $publisher->balance += $setting->cpc_pub;
                             $publisher->update();
 
                             $earningLog = EarningLog::firstOrNew([
@@ -262,10 +346,9 @@ class VisitorController extends Controller
                                 'ad_id' => $ad->id,
                             ]);
 
-                            $earningLog->amount +=  $setting->cpc;
+                            $earningLog->amount +=  $setting->cpc_pub;
                             $earningLog->ad_type = $ad->ad_type;
                             $earningLog->save();
-
                         }
                     }
                 }
@@ -290,12 +373,76 @@ class VisitorController extends Controller
         }
     }
 
+    public function thirdPartyadClicked($publisherId, $adTypeId)
+    {
+        $ad = AdType::where('id', $adTypeId)->first();
+        $setting = gs();
 
+        // $query = getIpInfo();
+        // $query = json_decode(file_get_contents('http://api.ipstack.com/' . $this->getIp() . '?access_key=' . $setting->location_api));
+        $publisherId = Crypt::decryptString($publisherId);
+
+        $existingIp = IpChart::where('ip', $this->getIp())->first();
+        $publisher = Publisher::findOrFail($publisherId);
+
+        $existIpLog = $existingIp->iplogs
+            ->where('ad_type_id', $ad->id)
+            ->where('is_click', 1)
+            ->where('time', '>=', Carbon::now()->subMinutes(1))
+            ->first();
+
+        if ($ad) {
+            $publisherAd = PublisherAd::firstOrNew([
+                'ad_type_id' => $ad->id,
+                'publisher_id' => $publisher->id,
+                'date' => Carbon::now()->toDateString()
+            ]);
+
+            // $publisherAd->advertiser_id = $ad->advertiser_id;
+            $publisherAd->click_count += 1;
+            $publisherAd->save();
+
+            if ($ad->is_click == 1) {
+                if (!$existIpLog) {
+                    $ipLog = new IpLog();
+                    $ipLog->ip_id = $existingIp->id;
+                    $ipLog->country = "Unknown";
+                    $ipLog->ad_type_id = $ad->id;
+                    $ipLog->ad_type = $ad->type;
+                    $ipLog->is_click = $ad->is_click;
+                    $ipLog->time = Carbon::now()->toTimeString();
+                    $ipLog->save();
+
+
+                    $ipcart = IpLog::with('ip')->where('ad_type_id' , $ad->id)->where('is_click' , 1)->where('created_at', '>=', Carbon::now()->subHours(24))->get();
+                    $uniqueIps = $ipcart->pluck('ip.ip')->count();
+                    if ($uniqueIps > $setting->same_ip_limit) {
+                    } else {
+                        if ($publisher) {
+                            $publisher->balance += $ad->tpCost->cpc_pub / $setting->cost_unit;
+                            $publisher->update();
+
+                            $earningLog = EarningLog::firstOrNew([
+                                'publisher_id' => $publisher->id,
+                                'ad_type_id' => $ad->id,
+                            ]);
+
+                            $earningLog->amount += $ad->tpCost->cpc_pub / $setting->cost_unit;
+                            $earningLog->ad_type = $ad->type;
+                            $earningLog->ad_type_id = $ad->id;
+                            $earningLog->save();
+                        }
+                    }
+                }
+            }
+
+            return;
+        } else {
+            return;
+        }
+    }
     public function setErrorLog($message, $errors = [])
     {
         info($message, $errors);
     }
-
-
-
 }

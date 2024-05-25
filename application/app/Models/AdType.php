@@ -13,4 +13,8 @@ class AdType extends Model
     {
         return $this->where('status', 1);
     }
+    public function tpCost()
+    {
+        return $this->belongsTo(ThirdPartyCostData::class,'tp_cost');
+    }
 }

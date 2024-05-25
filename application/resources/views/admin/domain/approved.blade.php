@@ -46,10 +46,10 @@
                                     </td>
 
                                     <td data-label="@lang('Action')">
-                                        <button class="btn btn--primary btn-sm UnapproveBtn" data-id={{$approved->id}} title="@lang('Unapprove')">
+                                        <button class="btn btn--primary btn-sm UnapproveBtn" data-id="{{$approved->id}}" title="@lang('Unapprove')">
                                             <i class="las la-ban text--shadow"></i>
                                         </button>
-                                        <button class="btn btn--danger btn-sm deleteBtn" data-id={{$approved->id}} title="@lang('Delete')">
+                                        <button class="btn btn--danger btn-sm deleteBtn" data-id="{{$approved->id}}" title="@lang('Delete')">
                                             <i class="las la-trash text--shadow"></i>
                                         </button>
                                     </td>

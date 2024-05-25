@@ -97,7 +97,6 @@ class AdvertiserController extends Controller
 
     public function detail($id)
     {
-        dd($id);
         $user = Advertiser::findOrFail($id);
         $pageTitle = 'User Details / @'.$user->username;
 

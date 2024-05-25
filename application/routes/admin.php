@@ -11,40 +11,40 @@ Route::namespace('Auth')->group(function () {
     });
 
     // Admin Password Reset
-    Route::controller('ForgotPasswordController')->group(function(){
+    Route::controller('ForgotPasswordController')->group(function () {
         Route::get('password/reset', 'showLinkRequestForm')->name('password.reset');
         Route::post('password/reset', 'sendResetCodeEmail');
         Route::get('password/code-verify', 'codeVerify')->name('password.code.verify');
         Route::post('password/verify-code', 'verifyCode')->name('password.verify.code');
     });
 
-    Route::controller('ResetPasswordController')->group(function(){
+    Route::controller('ResetPasswordController')->group(function () {
         Route::get('password/reset/{token}', 'showResetForm')->name('password.reset.form');
         Route::post('password/reset/change', 'reset')->name('password.change');
     });
 });
 
 Route::middleware('admin')->group(function () {
-    Route::controller('AdminController')->group(function(){
+    Route::controller('AdminController')->group(function () {
         Route::get('dashboard', 'dashboard')->name('dashboard');
         Route::get('profile', 'profile')->name('profile');
         Route::post('profile', 'profileUpdate')->name('profile.update');
         Route::post('password', 'passwordUpdate')->name('password.update');
 
         //Notification
-        Route::get('notifications','notifications')->name('notifications');
-        Route::get('notification/read/{id}','notificationRead')->name('notification.read');
-        Route::get('notifications/read-all','readAll')->name('notifications.readAll');
+        Route::get('notifications', 'notifications')->name('notifications');
+        Route::get('notification/read/{id}', 'notificationRead')->name('notification.read');
+        Route::get('notifications/read-all', 'readAll')->name('notifications.readAll');
 
         //Report Bugs
-        Route::get('request/report','requestReport')->name('request.report');
-        Route::post('request/report','reportSubmit');
+        Route::get('request/report', 'requestReport')->name('request.report');
+        Route::post('request/report', 'reportSubmit');
 
         Route::get('download/attachments/{file_hash}', 'downloadAttachment')->name('download.attachment');
     });
 
     // adervtisers Users Manager
-    Route::controller('AdvertiserController')->name('advertisers.')->prefix('manage/advertisers')->group(function(){
+    Route::controller('AdvertiserController')->name('advertisers.')->prefix('manage/advertisers')->group(function () {
         Route::get('/', 'allUsers')->name('all');
         Route::get('active', 'activeUsers')->name('active');
         Route::get('banned', 'bannedUsers')->name('banned');
@@ -69,7 +69,7 @@ Route::middleware('admin')->group(function () {
     });
 
     // publishers
-    Route::controller('PublisherController')->name('publishers.')->prefix('manage/publishers')->group(function(){
+    Route::controller('PublisherController')->name('publishers.')->prefix('manage/publishers')->group(function () {
         Route::get('/', 'allUsers')->name('all');
         Route::get('active', 'activeUsers')->name('active');
         Route::get('banned', 'bannedUsers')->name('banned');
@@ -93,61 +93,58 @@ Route::middleware('admin')->group(function () {
         Route::get('notification/log/{id}', 'notificationLog')->name('notification.log');
     });
 
-       // plan
-       Route::controller('PlanController')->name('plan.')->prefix('advertise/plan')->group(function(){
-        Route::get('/','index')->name('index');
-        Route::post('store','store')->name('store');
-        Route::get('edit/{id}','edit')->name('edit');
-        Route::post('update','update')->name('update');
-        Route::post('delete','delete')->name('delete');
-
+    // plan
+    Route::controller('PlanController')->name('plan.')->prefix('advertise/plan')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('store', 'store')->name('store');
+        Route::get('edit/{id}', 'edit')->name('edit');
+        Route::post('update', 'update')->name('update');
+        Route::post('delete', 'delete')->name('delete');
     });
 
     // advertises
-    Route::controller('AdvertiseController')->name('advertise.ads.')->prefix('advertise')->group(function(){
-    //    create ad type
-        Route::get('ad/types','getAdType')->name('adType.index');
-        Route::post('ad/types/store','AdTypeStore')->name('adType.store');
-        Route::post('ad/types/update','AdTypeUpdate')->name('adType.update');
+    Route::controller('AdvertiseController')->name('advertise.ads.')->prefix('advertise')->group(function () {
+        //    create ad type
+        Route::get('ad/types', 'getAdType')->name('adType.index');
+        Route::post('ad/types/store', 'AdTypeStore')->name('adType.store');
+        Route::post('ad/types/update', 'AdTypeUpdate')->name('adType.update');
 
         // keyword
-        Route::get('keywords','getKeyWords')->name('keyword.index');
-        Route::post('keywords/store','keyWordsStore')->name('keyword.store');
-        Route::post('keywords/update','keyWordsUpdate')->name('keyword.update');
+        Route::get('keywords', 'getKeyWords')->name('keyword.index');
+        Route::post('keywords/store', 'keyWordsStore')->name('keyword.store');
+        Route::post('keywords/update', 'keyWordsUpdate')->name('keyword.update');
+
+        // thirpartyads
+        Route::get('thirpartyads', 'getThirdPartyAds')->name('thirdparty.index');
+        Route::post('ad/types/thirdpartystore', 'ThirdPartyAdTypeStore')->name('thirdPartyadType.store');
+        Route::post('ad/types/thirdpartyupdate', 'thirdPartyadTypeUpdate')->name('thirdPartyadType.update');
 
         // all ads
-        Route::get('all','allAdvertise')->name('advertise.all');
-        Route::post('active','updateAdStatus')->name('update.status');
+        Route::get('all', 'allAdvertise')->name('advertise.all');
+        Route::post('active', 'updateAdStatus')->name('update.status');
 
-        Route::get('edit/{id}','editAdvertise')->name('edit');
-        Route::post('update/{id}','updateAdvertise')->name('update');
+        Route::get('edit/{id}', 'editAdvertise')->name('edit');
+        Route::post('update/{id}', 'updateAdvertise')->name('update');
 
         // ip logs
-        Route::get('ip-log','ipLog')->name('iplog');
-        Route::get('block/ip-log','blockiplog')->name('blockiplog');
-        Route::post('ip/block','blockIp')->name('blockedip');
-        Route::post('ip/unblock','unblockIp')->name('unblockedip');
-
+        Route::get('ip-log', 'ipLog')->name('iplog');
+        Route::get('block/ip-log', 'blockiplog')->name('blockiplog');
+        Route::post('ip/block', 'blockIp')->name('blockedip');
+        Route::post('ip/unblock', 'unblockIp')->name('unblockedip');
     });
 
-       // advertises
-       Route::controller('DomainController')->name('domain.')->prefix('domain')->group(function(){
-            Route::get('pending','getPending')->name('pending');
-            Route::post('approve','approve')->name('approve');
-            Route::post('delete','delete')->name('delete');
+    // advertises
+    Route::controller('DomainController')->name('domain.')->prefix('domain')->group(function () {
+        Route::get('pending', 'getPending')->name('pending');
+        Route::post('approve', 'approve')->name('approve');
+        Route::post('delete', 'delete')->name('delete');
 
-            Route::get('approve/list','getApproved')->name('get.approved');
-            Route::post('unapprove','unApprove')->name('unapprove');
-
-
-
-
-
-
-        });
+        Route::get('approve/list', 'getApproved')->name('get.approved');
+        Route::post('unapprove', 'unApprove')->name('unapprove');
+    });
 
     // Subscriber
-    Route::controller('SubscriberController')->group(function(){
+    Route::controller('SubscriberController')->group(function () {
         Route::get('subscriber', 'index')->name('subscriber.index');
         Route::get('subscriber/send/email', 'sendEmailForm')->name('subscriber.send.email');
         Route::post('subscriber/remove/{id}', 'remove')->name('subscriber.remove');
@@ -156,10 +153,10 @@ Route::middleware('admin')->group(function () {
 
 
     // Deposit Gateway
-    Route::name('gateway.')->prefix('payment/gateways')->group(function(){
+    Route::name('gateway.')->prefix('payment/gateways')->group(function () {
 
         // Automatic Gateway
-        Route::controller('AutomaticGatewayController')->group(function(){
+        Route::controller('AutomaticGatewayController')->group(function () {
             Route::get('automatic', 'index')->name('automatic.index');
             Route::get('automatic/edit/{alias}', 'edit')->name('automatic.edit');
             Route::post('automatic/update/{code}', 'update')->name('automatic.update');
@@ -170,7 +167,7 @@ Route::middleware('admin')->group(function () {
 
 
         // Manual Methods
-        Route::controller('ManualGatewayController')->group(function(){
+        Route::controller('ManualGatewayController')->group(function () {
             Route::get('manual', 'index')->name('manual.index');
             Route::get('manual/new', 'create')->name('manual.create');
             Route::post('manual/new', 'store')->name('manual.store');
@@ -183,7 +180,7 @@ Route::middleware('admin')->group(function () {
 
 
     // DEPOSIT SYSTEM
-    Route::name('deposit.')->controller('DepositController')->prefix('manage/deposits')->group(function(){
+    Route::name('deposit.')->controller('DepositController')->prefix('manage/deposits')->group(function () {
         Route::get('/', 'deposit')->name('list');
         Route::get('pending', 'pending')->name('pending');
         Route::get('rejected', 'rejected')->name('rejected');
@@ -194,14 +191,13 @@ Route::middleware('admin')->group(function () {
 
         Route::post('reject', 'reject')->name('reject');
         Route::post('approve/{id}', 'approve')->name('approve');
-
     });
 
 
     // WITHDRAW SYSTEM
-    Route::name('withdraw.')->prefix('manage/withdrawals')->group(function(){
+    Route::name('withdraw.')->prefix('manage/withdrawals')->group(function () {
 
-        Route::controller('WithdrawalController')->group(function(){
+        Route::controller('WithdrawalController')->group(function () {
             Route::get('pending', 'pending')->name('pending');
             Route::get('approved', 'approved')->name('approved');
             Route::get('rejected', 'rejected')->name('rejected');
@@ -213,7 +209,7 @@ Route::middleware('admin')->group(function () {
 
 
         // Withdraw Method
-        Route::controller('WithdrawMethodController')->group(function(){
+        Route::controller('WithdrawMethodController')->group(function () {
             Route::get('method/', 'methods')->name('method.index');
             Route::get('method/create', 'create')->name('method.create');
             Route::post('method/create', 'store')->name('method.store');
@@ -225,7 +221,7 @@ Route::middleware('admin')->group(function () {
     });
 
     // Report
-    Route::controller('ReportController')->group(function(){
+    Route::controller('ReportController')->group(function () {
         Route::get('report/advertiser/transaction', 'advertiserTransaction')->name('report.transaction');
         Route::get('report/publisher/transaction', 'publisherTransaction')->name('report.publisher.transaction');
         Route::get('report/advertisr/login/history', 'advertiserLoginHistory')->name('report.login.history');
@@ -239,7 +235,7 @@ Route::middleware('admin')->group(function () {
 
 
     // Admin Support
-    Route::controller('SupportTicketController')->prefix('support')->group(function(){
+    Route::controller('SupportTicketController')->prefix('support')->group(function () {
         Route::get('tickets', 'tickets')->name('ticket');
         Route::get('tickets/pending', 'pendingTicket')->name('ticket.pending');
         Route::get('tickets/closed', 'closedTicket')->name('ticket.closed');
@@ -253,7 +249,7 @@ Route::middleware('admin')->group(function () {
 
 
     // Language Manager
-    Route::controller('LanguageController')->prefix('manage')->group(function(){
+    Route::controller('LanguageController')->prefix('manage')->group(function () {
         Route::get('languages', 'langManage')->name('language.manage');
         Route::post('language', 'langStore')->name('language.manage.store');
         Route::post('language/delete/{id}', 'langDelete')->name('language.manage.delete');
@@ -265,46 +261,51 @@ Route::middleware('admin')->group(function () {
         Route::post('language/update/key/{id}', 'updateLanguageJson')->name('language.update.key');
     });
 
-    Route::controller('GeneralSettingController')->group(function(){
+    Route::controller('GeneralSettingController')->group(function () {
         // General Setting
         Route::get('global/settings', 'index')->name('setting.index');
         Route::post('global/settings', 'update')->name('setting.update');
 
+        // Third Party Cost Setting
+        Route::post('global/third-party-cost-settings/add', 'addTpCost')->name('setting.tpcost.add');
+        Route::post('global/third-party-cost-settings/update', 'updateTpCost')->name('setting.tpcost.update');
+        Route::post('global/third-party-cost-settings/delete', 'deleteTpCost')->name('setting.tpcost.delete');
+
+
         //configuration
-        Route::post('setting/system-configuration','systemConfigurationSubmit');
+        Route::post('setting/system-configuration', 'systemConfigurationSubmit');
 
         // Logo-Icon
         Route::get('setting/logo', 'logoIcon')->name('setting.logo.icon');
         Route::post('setting/logo', 'logoIconUpdate')->name('setting.logo.icon');
 
         //Cookie
-        Route::get('cookie','cookie')->name('setting.cookie');
-        Route::post('cookie','cookieSubmit');
-
+        Route::get('cookie', 'cookie')->name('setting.cookie');
+        Route::post('cookie', 'cookieSubmit');
     });
 
     //Notification Setting
-    Route::name('setting.notification.')->controller('NotificationController')->prefix('notifications')->group(function(){
+    Route::name('setting.notification.')->controller('NotificationController')->prefix('notifications')->group(function () {
         //Template Setting
-        Route::get('global','global')->name('global');
-        Route::post('global/update','globalUpdate')->name('global.update');
-        Route::get('templates','templates')->name('templates');
-        Route::get('template/edit/{id}','templateEdit')->name('template.edit');
-        Route::post('template/update/{id}','templateUpdate')->name('template.update');
+        Route::get('global', 'global')->name('global');
+        Route::post('global/update', 'globalUpdate')->name('global.update');
+        Route::get('templates', 'templates')->name('templates');
+        Route::get('template/edit/{id}', 'templateEdit')->name('template.edit');
+        Route::post('template/update/{id}', 'templateUpdate')->name('template.update');
 
         //Email Setting
-        Route::get('email/setting','emailSetting')->name('email');
-        Route::post('email/setting','emailSettingUpdate');
-        Route::post('email/test','emailTest')->name('email.test');
+        Route::get('email/setting', 'emailSetting')->name('email');
+        Route::post('email/setting', 'emailSettingUpdate');
+        Route::post('email/test', 'emailTest')->name('email.test');
 
         //SMS Setting
-        Route::get('sms/setting','smsSetting')->name('sms');
-        Route::post('sms/setting','smsSettingUpdate');
-        Route::post('sms/test','smsTest')->name('sms.test');
+        Route::get('sms/setting', 'smsSetting')->name('sms');
+        Route::post('sms/setting', 'smsSettingUpdate');
+        Route::post('sms/test', 'smsTest')->name('sms.test');
     });
 
     // Plugin
-    Route::controller('ExtensionController')->group(function(){
+    Route::controller('ExtensionController')->group(function () {
         Route::get('extensions', 'index')->name('extensions.index');
         Route::post('extensions/update/{id}', 'update')->name('extensions.update');
         Route::post('extensions/status/{id}', 'status')->name('extensions.status');
@@ -317,7 +318,7 @@ Route::middleware('admin')->group(function () {
     // Frontend
     Route::name('frontend.')->prefix('frontend')->group(function () {
 
-        Route::controller('FrontendController')->group(function(){
+        Route::controller('FrontendController')->group(function () {
             Route::get('templates', 'templates')->name('templates');
             Route::post('templates', 'templatesActive')->name('templates.active');
             Route::get('frontend-sections/{key}', 'frontendSections')->name('sections');
@@ -327,7 +328,7 @@ Route::middleware('admin')->group(function () {
         });
 
         // Page Builder
-        Route::controller('PageBuilderController')->prefix('manage')->group(function(){
+        Route::controller('PageBuilderController')->prefix('manage')->group(function () {
             Route::get('pages', 'managePages')->name('manage.pages');
             Route::post('pages', 'managePagesSave')->name('manage.pages.save');
             Route::post('pages/update', 'managePagesUpdate')->name('manage.pages.update');
@@ -335,7 +336,5 @@ Route::middleware('admin')->group(function () {
             Route::get('section/{id}', 'manageSection')->name('manage.section');
             Route::post('section/{id}', 'manageSectionUpdate')->name('manage.section.update');
         });
-
     });
 });
-

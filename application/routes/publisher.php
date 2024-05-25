@@ -81,7 +81,8 @@ Route::name('publisher.')->group(function () {
 
               //Profile setting
               Route::controller('AdvertiseController')->group(function(){
-                Route::get('advertisements', 'advertises')->name('advertises');
+                Route::get('advertisements/{is_adult}', 'advertises')->name('advertises');
+                Route::post('allAdvertises', 'allAdvertises')->name('allAdvertises');
                 Route::get('published/ad', 'publishedAd')->name('published.ad');
 
             });

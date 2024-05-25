@@ -13,6 +13,7 @@ use App\Models\GeneralSetting;
 use App\Lib\GoogleAuthenticator;
 use App\Models\Purchase;
 use Illuminate\Support\Facades\Cache;
+use App\Models\ThirdPartyCostData;
 
 
 function slug($string)
@@ -436,11 +437,13 @@ function dateSorting($arr)
 
 function gs()
 {
-    $general = Cache::get('GeneralSetting');
-    if (!$general) {
+    // $general = Cache::get('GeneralSetting');
+    // if (!$general) {
+    //     dd($general);
         $general = GeneralSetting::first();
+        $general->tpCostData = ThirdPartyCostData::get();
         Cache::put('GeneralSetting', $general);
-    }
+    // }
     return $general;
 }
 

@@ -16,11 +16,21 @@
                     @forelse($publisherAds as $ad)
                         <tr>
                             <td data-label="@lang('Name')">
+                                @if(__(@$ad->advertise->ad_name))
                                 {{__(@$ad->advertise->ad_name)}}
+                                @else
+                                {{__(@$ad->adTypeDetail->ad_name)}}
+                                @endif
                             </td>
 
                             <td data-label="@lang('Type')">
-                            <span class="badge badge--base"> {{__(@$ad->advertise->ad_type)}}</span>
+                            <span class="badge badge--base"> 
+                                @if(__(@$ad->advertise->ad_type))
+                                {{__(@$ad->advertise->ad_type)}}
+                                @else
+                                {{__(@$ad->adTypeDetail->type)}}
+                                @endif
+                            </span>
                             </td>
 
                             <td data-label="@lang('Click')">

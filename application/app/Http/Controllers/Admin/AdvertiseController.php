@@ -107,6 +107,52 @@ class AdvertiseController extends Controller
 
     }
 
+    public function ThirdPartyAdTypeStore(Request $request){
+        $request->validate([
+            'ad_name'=> 'required',
+            'type' => 'required',
+        ]);
+        
+        $adType = new AdType();
+        $adType->ad_name = $request->ad_name;
+        $adType->type = $request->type;
+        $adType->tp_cost = $request->tp_cost;
+        $adType->head_script = $request->head;
+        $adType->third_party_script = $request->script;
+        $adType->is_third_party = 1;
+        $adType->status = 1;
+        isset($request->impression) ? $adType->is_impression = 1 : $adType->is_impression = 0;
+        isset($request->click) ? $adType->is_click = 1 : $adType->is_click = 0;
+        isset($request->adult) ? $adType->is_adult = 1 : $adType->is_adult = 0;
+        $adType->save();
+        $notify[]=['success','AdType added successfully'];
+        return back()->withNotify($notify);
+
+    }
+    public function thirdPartyadTypeUpdate(Request $request){
+
+        $request->validate([
+            'ad_name'=> 'required',
+            'type' => 'required',
+        ]);
+
+        $adType = AdType::findOrFail($request->id);
+        $adType->ad_name = $request->ad_name;
+        $adType->type = $request->type;
+        $adType->head_script = $request->head;
+        $adType->tp_cost = $request->tp_cost;
+
+        $adType->third_party_script = $request->script;
+        isset($request->impression) ? $adType->is_impression = 1 : $adType->is_impression = 0;
+        isset($request->click) ? $adType->is_click = 1 : $adType->is_click = 0;
+        isset($request->adult) ? $adType->is_adult = 1 : $adType->is_adult = 0;
+        isset($request->status) ? $adType->status = 1 : $adType->status = 0;
+        $adType->save();
+
+        $notify[]=['success','AdType updated successfully'];
+        return back()->withNotify($notify);
+
+    }
     public function AdTypeUpdate(Request $request){
 
         $request->validate([
@@ -165,6 +211,14 @@ class AdvertiseController extends Controller
         $keyword->save();
         $notify[]=['success','Keyword updated successfully'];
         return back()->withNotify($notify);
+    }
+
+    // thirdpartyads
+        // keyword
+    public function getThirdPartyAds(){
+        $pageTitle = 'Third party ad Lists';
+        $keywords = Keyword::latest()->paginate(getPaginate());
+        return view('admin.thirdparty.index',compact('pageTitle','keywords'));
     }
 
     // ip logs

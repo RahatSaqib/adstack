@@ -19,4 +19,8 @@ class IpLog extends Model
     {
         return $this->belongsTo(IpChart::class,'ip_id');
     }
+    public function adTypeDetail()
+    {
+        return $this->belongsTo(AdType::class,'ad_type_id');
+    }
 }

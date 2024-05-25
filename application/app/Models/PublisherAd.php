@@ -14,4 +14,8 @@ class PublisherAd extends Model
     {
         return $this->belongsTo(CreateAd::class,'create_ad_id');
     }
+    public function adTypeDetail()
+    {
+        return $this->belongsTo(AdType::class,'ad_type_id');
+    }
 }

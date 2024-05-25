@@ -35,7 +35,7 @@
                         </a>
                     </li>
                      <li class="sidebar-menu-list__item {{ Route::is('publisher.advertises') ? 'active' : '' }}">
-                        <a href="{{route('publisher.advertises')}}" class="sidebar-menu-list__link">
+                        <a href="{{route('publisher.advertises' , '0')}}" class="sidebar-menu-list__link">
                         <span class="icon"><i class="fas fa-ad"></i></span>
                         <span class="text">@lang('Advertisements')</span>
                         </a>

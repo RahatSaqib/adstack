@@ -6,9 +6,12 @@
             <h5 class="global-text">{{$domain->name}}</h5>
             <p class="mt-3 mb-3">
                 @lang('To verify the domain, ')
-                    <li class="ml-2 dm-info">@lang('Please download the file and Place it to your Domain/Server')</li>
-                </p><br><br>
-                <button class="btn btn--base downloadFile" onclick="">@lang('Download')</button>
+                <li class="ml-2 dm-info">@lang('Please download both file and Place it to your Domain/Server')</li>
+            </p><br><br>
+            <button class="btn btn--base downloadFile" onclick=""><i class="fa fa-download"></i>@lang(' Download Adstack file')</button>
+            <a href="{{URL::to('/')}}/files/sw.js" download="sw.js">
+                <button class="btn btn--base" onclick=""><i class="fa fa-download"></i>@lang(' Download SW File')</button>
+            </a>
         </div>
     </div>
     <div class="col-lg-6">
@@ -25,13 +28,13 @@
                 <a href="{{$fileURL}}" target="_blank">{{str_replace('http://','',$fileURL)}}</a>
             </p><br>
             @if ($domain->status==0)
-                <a class="btn btn--success " href="{{route('publisher.domain.check',$domain->tracker)}}">@lang('Verify Now')</a>
+            <a class="btn btn--success " href="{{route('publisher.domain.check',$domain->tracker)}}">@lang('Verify Now')</a>
             @elseif($domain->status==1)
-            <a class="btn btn--secondary" href="javascript:void(0)">  <i class="menu-icon las la-check-circle"></i>@lang('Verified')</a>
+            <a class="btn btn--secondary" href="javascript:void(0)"> <i class="menu-icon las la-check-circle"></i>@lang('Verified')</a>
             @else
-                <a class="btn btn--secondary" href="javascript:void(0)">  <i class="menu-icon las la-spinner"></i>@lang('Pending')</a>
+            <a class="btn btn--secondary" href="javascript:void(0)"> <i class="menu-icon las la-spinner"></i>@lang('Pending')</a>
             @endif
-         </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -40,27 +43,24 @@
 
 
 <script>
-  'use strict'
+    'use strict'
 
     function download(filename, text) {
-     var element = document.createElement('a');
-     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-     element.setAttribute('download', filename);
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
 
-     element.style.display = 'none';
-     document.body.appendChild(element);
+        element.style.display = 'none';
+        document.body.appendChild(element);
 
-     element.click();
+        element.click();
 
-     document.body.removeChild(element);
-   }
+        document.body.removeChild(element);
+    }
 
-$('.downloadFile').on('click', function(){
+    $('.downloadFile').on('click', function() {
 
-   download("{{$fileName}}","{{$domain->verify_code}}");
-})
-
+        download("{{$fileName}}", "{{$domain->verify_code}}");
+    })
 </script>
 @endpush
-
-

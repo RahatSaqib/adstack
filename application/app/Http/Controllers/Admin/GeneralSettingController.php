@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Frontend;
 use App\Models\GeneralSetting;
+use App\Models\ThirdPartyCostData;
 use App\Rules\FileTypeValidate;
 use Illuminate\Http\Request;
 use Image;
@@ -15,7 +16,7 @@ class GeneralSettingController extends Controller
     {
         $pageTitle = 'Global Settings';
         $timezones = json_decode(file_get_contents(resource_path('views/admin/components/timezone.json')));
-        return view('admin.setting.general', compact('pageTitle','timezones'));
+        return view('admin.setting.general', compact('pageTitle', 'timezones'));
     }
 
     public function update(Request $request)
@@ -49,11 +50,15 @@ class GeneralSettingController extends Controller
         $general->check_domain_keyword = $request->check_domain_keyword ? 1 : 0;
         $general->cpc = $request->cpc;
         $general->cpm = $request->cpm;
+        $general->cpc_pub = $request->cpc_pub;
+        $general->cpm_pub = $request->cpm_pub;
+        $general->cost_unit = $request->cost_unit;
+        $general->same_ip_limit = $request->same_ip_limit;
         $general->location_api = $request->location_api;
         $general->save();
 
         $timezoneFile = config_path('timezone.php');
-        $content = '<?php $timezone = '.$request->timezone.' ?>';
+        $content = '<?php $timezone = ' . $request->timezone . ' ?>';
         file_put_contents($timezoneFile, $content);
         $notify[] = ['success', 'General Settings has been updated successfully'];
         return back()->withNotify($notify);
@@ -68,8 +73,8 @@ class GeneralSettingController extends Controller
     public function logoIconUpdate(Request $request)
     {
         $request->validate([
-            'logo' => ['image',new FileTypeValidate(['jpg','jpeg','png'])],
-            'favicon' => ['image',new FileTypeValidate(['png'])],
+            'logo' => ['image', new FileTypeValidate(['jpg', 'jpeg', 'png'])],
+            'favicon' => ['image', new FileTypeValidate(['png'])],
         ]);
         if ($request->hasFile('logo')) {
             try {
@@ -115,25 +120,68 @@ class GeneralSettingController extends Controller
         return back()->withNotify($notify);
     }
 
-    public function cookie(){
+    public function cookie()
+    {
         $pageTitle = 'GDPR Cookie';
-        $cookie = Frontend::where('data_keys','cookie.data')->firstOrFail();
-        return view('admin.setting.cookie',compact('pageTitle','cookie'));
+        $cookie = Frontend::where('data_keys', 'cookie.data')->firstOrFail();
+        return view('admin.setting.cookie', compact('pageTitle', 'cookie'));
     }
 
-    public function cookieSubmit(Request $request){
+    public function cookieSubmit(Request $request)
+    {
         $request->validate([
-            'short_desc'=>'required|string|max:255',
-            'description'=>'required',
+            'short_desc' => 'required|string|max:255',
+            'description' => 'required',
         ]);
-        $cookie = Frontend::where('data_keys','cookie.data')->firstOrFail();
+        $cookie = Frontend::where('data_keys', 'cookie.data')->firstOrFail();
         $cookie->data_values = [
             'short_desc' => $request->short_desc,
             'description' => $request->description,
             'status' => $request->status ? 1 : 0,
         ];
         $cookie->save();
-        $notify[] = ['success','Cookie policy has been updated successfully'];
+        $notify[] = ['success', 'Cookie policy has been updated successfully'];
+        return back()->withNotify($notify);
+    }
+    public function addTpCost(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'cpc_pub' => 'required',
+            'cpm_pub' => 'required',
+        ]);
+        $tpCostData = new ThirdPartyCostData();
+        $tpCostData->title = $request->title;
+        $tpCostData->cpc_pub = $request->cpc_pub;
+        $tpCostData->cpm_pub = $request->cpm_pub;
+        $tpCostData->save();
+        $notify[] = ['success', 'Third Party Cost has been added successfully'];
+        return back()->withNotify($notify);
+    }
+
+
+    public function updateTpCost(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'cpc_pub' => 'required',
+            'cpm_pub' => 'required',
+        ]);
+        $tpCostData = ThirdPartyCostData::findOrFail($request->id);
+        $tpCostData->title = $request->title;
+        $tpCostData->cpc_pub = $request->cpc_pub;
+        $tpCostData->cpm_pub = $request->cpm_pub;
+        $tpCostData->save();
+        $notify[] = ['success', 'Third Party Cost has been updated successfully'];
+        return back()->withNotify($notify);
+    }
+
+    public function deleteTpCost(Request $request)
+    {
+        $tpCostData =  ThirdPartyCostData::findOrFail($request->id);
+
+        $tpCostData->delete();
+        $notify[] = ['success', 'Third Party Has been Deleted'];
         return back()->withNotify($notify);
     }
 }

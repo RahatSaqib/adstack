@@ -43,7 +43,7 @@
                             <i class="las la-edit text--shadow "></i>
                         </a>
                      @endif
-                        <a href="javascript:void(0)" class="btn btn--danger btn--sm rejectBtn" title="@lang('Delete')" data-id={{$dv->id}}>
+                        <a href="javascript:void(0)" class="btn btn--danger btn--sm rejectBtn" title="@lang('Delete')" data-id="{{$dv->id}}">
                                 <i class="las la-trash"></i>
                         </a>
                       </td>
