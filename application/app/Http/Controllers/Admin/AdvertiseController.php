@@ -118,7 +118,7 @@ class AdvertiseController extends Controller
         $adType->type = $request->type;
         $adType->tp_cost = $request->tp_cost;
         $adType->head_script = $request->head;
-        $adType->third_party_script = $request->script;
+        $adType->third_party_script = $request->script ? $request->script : $request->link_script;
         $adType->is_third_party = 1;
         $adType->status = 1;
         isset($request->impression) ? $adType->is_impression = 1 : $adType->is_impression = 0;
@@ -142,7 +142,7 @@ class AdvertiseController extends Controller
         $adType->head_script = $request->head;
         $adType->tp_cost = $request->tp_cost;
 
-        $adType->third_party_script = $request->script;
+        $adType->third_party_script = $request->script ? $request->script : $request->link_script;
         isset($request->impression) ? $adType->is_impression = 1 : $adType->is_impression = 0;
         isset($request->click) ? $adType->is_click = 1 : $adType->is_click = 0;
         isset($request->adult) ? $adType->is_adult = 1 : $adType->is_adult = 0;

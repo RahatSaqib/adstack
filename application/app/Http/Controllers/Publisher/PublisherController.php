@@ -208,7 +208,7 @@ class PublisherController extends Controller
         $domain = DomainVerifcation::whereTracker($tracker)->first();
 
         $fileURL = 'http://' . $domain->name . '/' . strtolower(str_replace(' ', '_', $general->site_name)) . '.txt';
-        $fileURL_2 = 'http://' . $domain->name . '/files/sw.js';
+        $fileURL_2 = 'http://' . $domain->name . '/sw.js';
 
         $headers = @get_headers($fileURL);
         $headers_2 = @get_headers($fileURL_2);
@@ -285,14 +285,14 @@ class PublisherController extends Controller
     public function publishedPerdayAd(){
         $pageTitle = 'Per Day Ad Log';
         $perdayAds = PublisherAd::where('publisher_id',auth()->guard('publisher')->user()->id)
-                                ->with('advertise')->latest()->paginate(getPaginate());
+                                ->with('advertise')->with('adTypeDetail')->latest()->paginate(getPaginate());
         return view($this->activeTemplate.'publisher.advertises.ad_report',compact('pageTitle','perdayAds'));
     }
 
     public function earningLog(){
         $pageTitle = 'Per Day Earning Log';
         $perdayEarnings = EarningLog::where('publisher_id',auth()->guard('publisher')->user()->id)
-                                ->with('ad')->latest()->paginate(getPaginate());
+                                ->with('ad')->with('adType')->latest()->paginate(getPaginate());
         return view($this->activeTemplate.'publisher.advertises.earning',compact('pageTitle','perdayEarnings'));
     }
 

@@ -79,5 +79,6 @@ class Kernel extends HttpKernel
         'check.status' => \App\Http\Middleware\CheckStatus::class,
         'demo' => \App\Http\Middleware\Demo::class,
         'registration.complete' => \App\Http\Middleware\RegistrationStep::class,
+        'cors' => \App\Http\Middleware\Cors::class,
     ];
 }

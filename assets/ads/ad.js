@@ -9,7 +9,28 @@ let ads = {};
 function log(message) {
     console.log(message)
 }
-
+async function createHash(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+let IP = ''
+let IPHash = ''
+var xhttp = new XMLHttpRequest();
+xhttp.open('GET', "https://api.ipify.org/?format=json", true);
+xhttp.onreadystatechange = async function () {
+    if (this.status == 200) {
+        if (this.responseText) {
+            let response = JSON.parse(this.responseText)
+            IP = response.ip;
+            IPHash = await createHash(IP)
+        }
+    }
+};
+xhttp.send();
 function attachOnloadEvent(func, obj) {
     if (typeof window.addEventListener != 'undefined') {
         window.addEventListener('load', func, false);
@@ -30,11 +51,13 @@ function attachOnloadEvent(func, obj) {
     }
 }
 
-function httpRequest(AdUrl) {
+function httpRequest(AdUrl, data) {
     if (AdUrl != '') {
         var xhttp = new XMLHttpRequest();
-        xhttp.open('GET', AdUrl, true);
-        xhttp.send();
+        // Set the request header if you are sending JSON
+        xhttp.open('POST', AdUrl, true);
+        xhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        xhttp.send(data);
     }
 }
 async function sleep(time) {
@@ -97,7 +120,7 @@ var observer = new MutationObserver(async function (mutations) {
             }
             else if (ad == 'googlead') {
                 if (item['nextElement'].tagName == 'INS' && item['nextElement'].getAttribute('data-ad-status') != 'unfilled' && !item.alreadyMuted) {
-                // if (item['nextElement'].tagName == 'INS' && !item.alreadyMuted) {
+                    // if (item['nextElement'].tagName == 'INS' && !item.alreadyMuted) {
                     elem = item['nextElement']
                 }
             }
@@ -110,12 +133,27 @@ var observer = new MutationObserver(async function (mutations) {
             }
 
             if (elem) {
+
                 item.alreadyMuted = true
                 elem.onmouseover = processMouseOver;
                 elem.onmouseout = processMouseOut;
-                AdUrl = siteurl + '/tp-ads/' + item.getPublisher + '/' + item.thirdPartyId + '/' + item.currentUrl;
+                AdUrl = siteurl + '/tp-ads'
+
+                const data = JSON.stringify({
+                    "publisherId": item.getPublisher,
+                    "adTypeId": item.thirdPartyId,
+                    "currentUrl": item.currentUrl,
+                    "IP": IP,
+                    "IPHash": IPHash
+                })
+
+                httpRequest(AdUrl, data)
             }
-            httpRequest(AdUrl)
+            // else if (ad == 'third-party-link' && !item.alreadyMuted) {
+            //     item.alreadyMuted = true
+            //     AdUrl = siteurl + '/tp-ads/' + item.getPublisher + '/' + item.thirdPartyId + '/' + item.currentUrl;
+            // }
+
         }
     }
     // Stop observing once the element is rendered (optional)
@@ -144,6 +182,8 @@ function processIFrameClick() {
         let getPublisher, thirdPartyId
         var advertises = document.getElementsByClassName("MainAdverTiseMentDiv");
         getPublisher = advertises[0].getAttribute('data-publisher');
+        var currentUrl = window.location.hostname;
+
         // replace with your function
         if (currElem.getAttribute('id') == 'creative_iframe' || currElem.getAttribute('id') == 'note-0') {
             // log("IFrame >> CLICK << detected adcash. ");
@@ -183,8 +223,15 @@ function processIFrameClick() {
             }
             thirdPartyId = thirdPartyId || ads['adsterra'][0].thirdPartyId;
         }
-        let AdUrl = siteurl + '/tp-ad-clicked/' + getPublisher + '/' + thirdPartyId
-        httpRequest(AdUrl)
+        let AdUrl = siteurl + '/tp-ad-clicked'
+        const data = JSON.stringify({
+            "publisherId": getPublisher,
+            "adTypeId": thirdPartyId,
+            "IP": IP,
+            "IPHash": IPHash,
+            "currentUrl" : currentUrl
+        })
+        httpRequest(AdUrl, data)
     }
 }
 
@@ -353,6 +400,15 @@ async function init() {
                     nextElement
                 })
             }
+
+            // if (adType == 'third-party-link') {
+            //     processAdArr('third-party-link', {
+            //         thirdPartyId,
+            //         getPublisher,
+            //         currentUrl,
+            //         nextElement
+            //     })
+            // }
         }
         else {
             var AdUrl = siteurl + '/ads/' + getPublisher + '/' + getAdSize + '/' + currentUrl;
@@ -370,8 +426,28 @@ async function init() {
         }
 
     }
+    // //If the ad is external link then this will be the click event
+    // var observed = document.getElementsByTagName('a');
+
+    // for (var i = 0; i < observed.length; i++) {
+    //     observed[i].addEventListener('click', function (e) {
+    //         if (e.target.getAttribute('link-type') == 'third_party_link') {
+    //             const prevElem = e?.target.previousElementSibling
+    //             var getPublisher = prevElem.getAttribute('data-publisher');
+    //             const thirdPartyId = prevElem.getAttribute('data-id');
+    //             let AdUrl = siteurl + '/tp-ad-clicked/' + getPublisher + '/' + thirdPartyId
+    //             httpRequest(AdUrl)
+    //             window.open(e.target.getAttribute('href'))
+    //         }
+
+    //         if (e.preventDefault) { e.preventDefault() } else {
+    //             e.returnValue
+    //         }
+    //     }, false);
+    // }
 
 }
+
 
 if (typeof window.attachEvent != 'undefined') {
     top.attachEvent('onblur', processIFrameClick);

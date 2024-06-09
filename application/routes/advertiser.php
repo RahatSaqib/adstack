@@ -1,6 +1,6 @@
 <?php
 
-
+use Illuminate\Support\Facades\Route;
 Route::namespace('Advertiser\Auth')->name('advertiser.')->group(function () {
 
     Route::controller('LoginController')->group(function(){

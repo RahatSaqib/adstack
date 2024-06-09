@@ -11,8 +11,15 @@ class EarningLog extends Model
     protected $fillable = [
         'publisher_id',
         'ad_id',
-        'date'
+        'ad_type',
+        'ad_type_id',
+        'date',
+        'amount'
     ];
+    public function adType()
+    {
+        return $this->belongsTo(AdType::class,'ad_type_id');
+    }
     public function ad()
     {
         return $this->belongsTo(CreateAd::class,'ad_id');

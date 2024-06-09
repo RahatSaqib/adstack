@@ -8,18 +8,20 @@ use App\Http\Controllers\Controller;
 
 class AdvertiseController extends Controller
 {
-    public function advertises($show_adult)
+    public function advertises($type)
     {
         $ads = [];
-        if ($show_adult) {
-            $ads = AdType::where('status', 1)->latest()->paginate(getPaginate());
+        if ($type == 'adult') {
+            $ads = AdType::where('status', 1)->where('is_adult', 1)->latest()->paginate(getPaginate());
+        }
+        else if($type == 'link'){
+            $ads = AdType::where('status', 1)->where('type', 'third-party-link')->latest()->paginate(getPaginate());
         }
         else{
             $ads = AdType::where('status', 1)->where('is_adult', 0)->latest()->paginate(getPaginate());
         }
         $pageTitle = 'Advertise Types';
-        $is_adult = $show_adult;
-        return view($this->activeTemplate . 'publisher.advertises.advertises', compact('ads', 'pageTitle' , 'is_adult'));
+        return view($this->activeTemplate . 'publisher.advertises.advertises', compact('ads', 'pageTitle' , 'type'));
     }
 
     public function allAdvertises()

@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 Route::namespace('Publisher\Auth')->name('publisher.')->group(function () {
 
     Route::controller('LoginController')->group(function(){
@@ -81,7 +83,7 @@ Route::name('publisher.')->group(function () {
 
               //Profile setting
               Route::controller('AdvertiseController')->group(function(){
-                Route::get('advertisements/{is_adult}', 'advertises')->name('advertises');
+                Route::get('advertisements/{type}', 'advertises')->name('advertises');
                 Route::post('allAdvertises', 'allAdvertises')->name('allAdvertises');
                 Route::get('published/ad', 'publishedAd')->name('published.ad');
 

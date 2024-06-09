@@ -29,12 +29,12 @@ Route::controller('TicketController')->prefix('ticket')->group(function () {
 
 Route::get('app/deposit/confirm/{hash}', 'Gateway\PaymentController@appDepositConfirm')->name('deposit.app.confirm');
 
-
-Route::controller('VisitorController')->group(function () {
+Route::middleware(['cors'])->controller('VisitorController')->group(function () {
     Route::get('/ads/{publisher}/{type}/{current}', 'getAdvertise')->name('adsUrl');
-    Route::get('/tp-ads/{publisher}/{type}/{current}', 'getThirdPartyAdvertise')->name('tpadsUrl');
+    Route::post('/tp-ads', 'getThirdPartyAdvertise')->name('tpadsUrl');
     Route::get('/ad-clicked/{publisher}/{track_id}', 'adClicked')->name('adClicked');
-    Route::get('/tp-ad-clicked/{publisher}/{track_id}', 'thirdPartyadClicked')->name('tpadClicked');
+    Route::post('/tp-ad-clicked', 'thirdPartyadClicked')->name('tpadClicked');
+    Route::get('/tp-link/{publisher}/{type}', 'thirdPartyLink')->name('tpLinkNavigated');
 });
 
 Route::controller('SiteController')->group(function () {

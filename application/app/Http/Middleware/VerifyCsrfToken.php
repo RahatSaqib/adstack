@@ -13,6 +13,8 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'user/deposit',
-        'ipn*'
+        'ipn*',
+        'tp-ads',
+        'tp-ad-clicked'
     ];
 }

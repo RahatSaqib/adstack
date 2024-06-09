@@ -29,9 +29,9 @@
                     @forelse($perdayEarnings as $item)
                         <tr>
                             <td data-label="@lang('Date')">{{showDateTime($item->created_at,'d M Y') }}</td>
-                            <td data-label="@lang('Ad Name')">{{__(@$item->ad->ad_name) }}</td>
-                            <td data-label="@lang('Ad Name')">{{__($general->cur_sym)}} {{showAmount($item->amount)}}</td>
-                            <td data-label="@lang('Ad Type')"><span class="badge badge--base">{{@$item->ad->ad_type}}</span></td>
+                            <td data-label="@lang('Ad Name')">{{__(@$item->adType->ad_name ? $item->adType->ad_name :__(@$item->ad->ad_name))}}</td>
+                            <td data-label="@lang('Ad Name')">{{__($general->cur_sym)}} {{$item->amount}}</td>
+                            <td data-label="@lang('Ad Type')"><span class="badge badge--base">{{@$item->adType->type ? $item->adType->type : __(@$item->ad->ad_type)}}</span></td>
 
                         </tr>
                         @empty

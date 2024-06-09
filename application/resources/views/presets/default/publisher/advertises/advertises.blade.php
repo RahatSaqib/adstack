@@ -1,21 +1,41 @@
 @extends($activeTemplate.'layouts.publisher.master')
 @section('content')
+<style>
+    .advertisesShowBtn {
+        margin-left: 5px;
+    }
+</style>
 <div class="row gy-4">
     <!-- < data table -->
     <div class="col-xl-12 col-lg-12 pb-30">
-        <div class="mb-30 float-right">
-            @if($is_adult == 0)
-            <form method="get" action="{{ route('publisher.advertises', '1') }}">
+        <div class="mb-30 float-right" style="display: flex;">
+            @if($type != 'adult')
+            <form method="get" action="{{ route('publisher.advertises', 'adult') }}">
                 @csrf
-                <button type="submit" class="btn btn--secondary addThirdPartyModal"><i class="fas fa-eye"></i>
+                <button type="submit" class="btn btn--secondary advertisesShowBtn"><i class="fas fa-eye"></i>
                     @lang('Show Adult Script')
                 </button>
             </form>
             @else
-            <form method="get" action="{{ route('publisher.advertises', '0') }}">
+            <form method="get" action="{{ route('publisher.advertises', 'all') }}">
                 @csrf
-                <button type="submit" class="btn btn--primary addThirdPartyModal"><i class="fas fa-lock"></i>
+                <button type="submit" class="btn btn--primary advertisesShowBtn"><i class="fas fa-lock"></i>
                     @lang('Hide Adult Script')
+                </button>
+            </form>
+            @endif
+            @if($type != 'link')
+            <form method="get" action="{{ route('publisher.advertises', 'link') }}">
+                @csrf
+                <button type="submit" class="btn btn--secondary advertisesShowBtn"><i class="fas fa-eye"></i>
+                    @lang('Show Only Links')
+                </button>
+            </form>
+            @else
+            <form method="get" action="{{ route('publisher.advertises', 'all') }}">
+                @csrf
+                <button type="submit" class="btn btn--primary advertisesShowBtn"><i class="fas fa-list"></i>
+                    @lang('Show All')
                 </button>
             </form>
             @endif
@@ -40,20 +60,20 @@
                         <td data-label="@lang('Ad Type')"><span class="badge badge--base">{{__($ad->type) }}</span></td>
                         <td data-label="@lang('Ad Width')">
                             @if(__($ad->width))
-                                {{__($ad->width)}} @lang('px')
+                            {{__($ad->width)}} @lang('px')
                             @else
-                                N/A
+                            N/A
                             @endif
                         </td>
                         <td data-label="@lang('Ad Height')">
                             @if(__($ad->height))
-                                    {{__($ad->height)}} @lang('px')
+                            {{__($ad->height)}} @lang('px')
                             @else
-                                    N/A
+                            N/A
                             @endif
                         </td>
                         <td data-label="@lang('Script')">
-                            <button type="button" class="btn btn-sm btn--primary viewScript" data-id="{{$ad->id}}" data-name="{{$ad->ad_name}}" data-type="{{$ad->type}}" data-third-party-script="{{$ad->third_party_script}}" data-head-script="{{$ad->head_script}}" data-is-third-party="{{$ad->is_third_party}}" data-slug="{{$ad->slug}}" data-status="{{$ad->status}}" data-publisher="{{ Crypt::encryptString(Auth::guard('publisher')->user()->id) }}" data-url="{{url('/')}}">
+                            <button type="button" class="btn btn-sm btn--primary viewScript" data-id="{{$ad->id}}" data-name="{{$ad->ad_name}}" data-type="{{$ad->type}}" data-third-party-script="{{$ad->third_party_script}}" data-head-script="{{$ad->head_script}}" data-is-third-party="{{$ad->is_third_party}}" data-slug="{{$ad->slug}}" data-status="{{$ad->status}}" data-is-link="{{$ad->is_link}}" data-publisher="{{ Crypt::encryptString(Auth::guard('publisher')->user()->id) }}" data-url="{{url('/')}}">
                                 < Get Script>
                             </button>
                         </td>
@@ -124,6 +144,14 @@
         var status = $(this).data('status')
         var id = $(this).data('id')
         var url = $(this).data('url')
+        let thirdPartyScript = `<div class='MainAdverTiseMentDiv' data-publisher="${publisher}" data-thirdparty="${isThirdParty}" data-id="${id}" data-ad-type="${type}"></div>`
+        if (isThirdParty) {
+            if (type == 'third-party-link') {
+                thirdPartyScript = `${url}/tp-link/${publisher}/${id}`
+            } else {
+                thirdPartyScript += script.trim()
+            }
+        }
 
         let html = `
         
@@ -149,18 +177,16 @@
                             <h4>Copy this code anywhere in your html</h4>
                             <div class="copy-script">
                                 <textarea class="ad-text-area lead" id="advertScript${id}" rows='8' readonly>
-                                ${isThirdParty ? `<div class='MainAdverTiseMentDiv' data-publisher="${publisher}" data-thirdparty="${isThirdParty}" data-id="${id}" data-ad-type="${type}"></div>
-                                            ${script.trim()}
-                                            
-                                            `
+                                ${isThirdParty ? thirdPartyScript
                                     :
                                     `<div class='MainAdverTiseMentDiv' data-publisher="${publisher}" data-adsize="${slug}"></div>
                                         `}
-                                        <!-- If the below script already inside body tag don't add twice.
-	                                    Start -->
-                                    ${'<scr' + `ipt class="adScriptClass" src="${url}/assets/ads/ad.js"></scr` + 'ipt>'}
-	                                    <!-- end -->
+                                        ${type != 'third-party-link' ? 
+                                            `<!-- If the below script already inside body tag don't add twice.Start -->
+                                                ${'<scr' + `ipt class="adScriptClass" src="${url}/assets/ads/ad.js"></scr` + 'ipt>'}
+	                                        <!-- end -->` :''}
 
+                                
                                 </textarea>
                                 <button class="btn btn--sm script-copy-btn copyButton${id}" onclick='copyToClipboard("#advertScript${id}","${id}")'><i class="fas fa-clipboard"></i> @lang('Copy')</button>
 

@@ -30,8 +30,8 @@
                     @forelse($perdayAds as $ad)
                         <tr>
                             <td data-label="@lang('Date')">{{showDateTime($ad->created_at,'d M Y') }}</td>
-                            <td data-label="@lang('Ad Title')">{{__(@$ad->advertise->ad_name) }}</td>
-                            <td data-label="@lang('Ad Type')"><span class="badge badge--base">{{__(@$ad->advertise->ad_type)}}</span></td>
+                            <td data-label="@lang('Ad Title')">{{__(@$ad->adTypeDetail->ad_name ? $ad->adTypeDetail->ad_name :__(@$ad->advertise->ad_name))}}</td>
+                            <td data-label="@lang('Ad Type')"><span class="badge badge--base">{{__(@$ad->adTypeDetail->type ? $ad->adTypeDetail->type : __(@$ad->advertise->ad_type))}}</span></td>
                             <td data-label="@lang('Total Clicks')">{{number_format($ad->click_count)}}</td>
                             <td data-label="@lang('Total Impressions')">{{number_format($ad->imp_count) }}</td>
                         </tr>

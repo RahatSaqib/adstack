@@ -68,7 +68,11 @@ class ClientInfo{
 	        '/ipad/i' => 'iPad',
 	        '/android/i' => 'Android',
 	        '/blackberry/i' => 'BlackBerry',
-	        '/webos/i' => 'Mobile'
+	        '/webos/i' => 'Mobile',
+	        '/Googlebot/i' => 'Bot',
+	        '/Bytespider/i' => 'Bot',
+	        '/AppleBot/i' => 'Bot',
+	        '/bot/i' => 'Bot',
 	    );
 	    foreach ($osArray as $regex => $value) {
 	        if (preg_match($regex, $userAgent)) {
